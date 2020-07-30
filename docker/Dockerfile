@@ -34,9 +34,17 @@ FROM debian:stretch-slim as runstage
 RUN mkdir -p /src  && mkdir -p /opt
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libboost-program-options1.62.0 libboost-regex1.62.0 \
-        libboost-date-time1.62.0 libboost-chrono1.62.0 libboost-filesystem1.62.0 \
-        libboost-iostreams1.62.0 libboost-thread1.62.0 expat liblua5.2-0 libtbb2 &&\
-    rm -rf /var/lib/apt/lists/*
+    libboost-date-time1.62.0 libboost-chrono1.62.0 libboost-filesystem1.62.0 \
+    libboost-iostreams1.62.0 libboost-thread1.62.0 expat liblua5.2-0 libtbb2 \
+    ca-certificates \
+    curl \
+    gnupg \
+    && echo "deb http://packages.cloud.google.com/apt gcsfuse-stretch main" \
+    | tee /etc/apt/sources.list.d/gcsfuse.list \
+    && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
+    && apt-get update \
+    && apt-get install --yes gcsfuse \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
 COPY --from=builder /usr/local /usr/local
 COPY --from=builder /opt /opt
 RUN /usr/local/bin/osrm-extract --help && \
